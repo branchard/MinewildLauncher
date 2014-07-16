@@ -22,8 +22,6 @@ import java.util.zip.ZipFile;
 import javax.swing.UIManager;
 import javax.swing.plaf.FontUIResource;
 
-import org.apache.commons.lang3.StringUtils;
-
 import fr.minewild.launcher.Main;
 import fr.minewild.launcher.data.Constants;
 import fr.minewild.launcher.utils.SystemManager.OS;
@@ -33,8 +31,7 @@ public class Utils
 	
 	public static final String buildTitle()
 	{
-		return Constants.LAUNCHER_NAME + " v" + Constants.LAUNCHER_VERSION + " " + Constants.LAUNCHER_STATUS + " - By "
-				+ StringUtils.join(Constants.LAUNCHER_AUTHORS, ' ');
+		return Constants.LAUNCHER_NAME + " v" + Constants.LAUNCHER_VERSION + " " + Constants.LAUNCHER_STATUS;
 	}
 	
 	public static final String getFileChecksum(final File file, final MessageDigest digest) throws IOException
@@ -216,7 +213,7 @@ public class Utils
 	
 	public static final boolean isValidFileName(final String name)
 	{
-		final File tempDir = new File(Main.system.getMinecraftDirectory() + File.separator + "temp");
+		final File tempDir = new File(Main.system.getMinewildDirectory() + File.separator + "temp");
 		if(!tempDir.exists())
 		{
 			tempDir.mkdir();

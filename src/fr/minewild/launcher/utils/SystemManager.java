@@ -2,6 +2,8 @@ package fr.minewild.launcher.utils;
 
 import java.io.File;
 
+import fr.minewild.launcher.data.Constants;
+
 public class SystemManager
 {
 	
@@ -59,9 +61,9 @@ public class SystemManager
 		return new File(dirName);
 	}
 	
-	public final File getMinecraftDirectory()
+	public final File getMinewildDirectory()
 	{
-		return new File(getUserDirectory() + File.separator + (platform.getOS() == OS.MAC ? "" : ".") + "minewild");
+		return new File(getUserDirectory() + File.separator + (platform.getOS() == OS.MAC ? "" : ".") + Constants.MINEWILD_DIR_NAME);
 	}
 	
 	public enum OS

@@ -1,45 +1,40 @@
 package fr.minewild.launcher.utils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.net.ConnectException;
-import java.net.InetSocketAddress;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
+import java.util.UUID;
 import java.util.logging.Level;
 
 import fr.minewild.launcher.data.Constants;
 
 public class ConnectionUtils
 {
-	public static final boolean isOnline()// check minewild server communication
+	public static String getUUIDfromServer(String username)
 	{
-		Socket socket = new Socket();
+		LogUtils.log(Level.INFO, Constants.CONNECTION_PREFIX + "Getting UUID from " + Constants.MINEWILD_SERVER_ADDRESS + "...");
+		PrintWriter out = null;
+		BufferedReader input = null;
+		Socket socket = null;
 		try
 		{
-			socket.connect(new InetSocketAddress(Constants.MINEWILD_SERVER_ADDRESS, Constants.MINEWILD_SERVER_PORT), Constants.SERVER_TIMEOUT);
+			socket = new Socket(Constants.MINEWILD_SERVER_ADDRESS, Constants.MINEWILD_GET_UUID_PORT);
+			socket.setSoTimeout(Constants.SERVER_TIMEOUT);
+			out = new PrintWriter(socket.getOutputStream(), true);
+			input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			out.println(username);
+			String result = input.readLine();
+			LogUtils.log(Level.INFO, Constants.LAUNCHER_PREFIX + "UUID: " + result);
 			socket.close();
-			LogUtils.log(Level.INFO, Constants.CONNECTION_PREFIX + "connection test - ok");
-			return true;
-		}
-		catch(SocketTimeoutException | ConnectException e)// timeout or ConnectException
-		{
-			try
-			{
-				socket.close();
-			}
-			catch(IOException e1)
-			{
-				e1.printStackTrace();
-				System.exit(1);// error
-			}
-			LogUtils.log(Level.WARNING, Constants.CONNECTION_PREFIX + "connection test - timeout");
-			return false;
+			return result;
 		}
 		catch(IOException e)
 		{
+			// TODO Auto-generated catch block
 			e.printStackTrace();
-			System.exit(1);// error
 		}
-		return false;
+		return UUID.randomUUID().toString().replaceAll("-", "");// TODO gérer les premiums
 	}
 }

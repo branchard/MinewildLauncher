@@ -25,6 +25,8 @@ public class Constants
 	public static final Color       LAUCNHER_FONT_COLOR             = new Color(134, 134, 134);
 	public static final String		LAUNCHER_PLAYBTN_ICON			= "/fr/minewild/launcher/res/playButton.png";
 	public static final String		LAUNCHER_CLOSEBTN_ICON			= "/fr/minewild/launcher/res/closeButton.png";
+	public static final String		MINEWILD_DIR_NAME				= "minewild";
+	public static final String		LAUCNHER_SAVE_FILE_NAME			= "launcher-save";
 	
 	////////////////////////////////
 	//                            //
@@ -33,7 +35,7 @@ public class Constants
 	////////////////////////////////
 	public static final String		CONNECTION_PREFIX				= "[CONNECTION] ";
 	public static final String		MINEWILD_SERVER_ADDRESS			= "188.165.164.162";
-	public static final int			MINEWILD_SERVER_PORT			= 25752, SERVER_TIMEOUT = 6000;
+	public static final int			MINEWILD_SERVER_PORT			= 25752, MINEWILD_GET_UUID_PORT = 8072, SERVER_TIMEOUT = 6000;
 	
 	////////////////////////////////
 	//                            //
