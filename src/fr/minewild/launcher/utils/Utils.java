@@ -34,6 +34,12 @@ public class Utils
 		return Constants.LAUNCHER_NAME + " v" + Constants.LAUNCHER_VERSION + " " + Constants.LAUNCHER_STATUS;
 	}
 	
+	public static final String getCurrentVersion()
+	{
+		//TODO: I must get version from server
+		return Constants.DEFAULT_MINECRAFT_VERSION;// TODO: I must save the last version running
+	}
+	
 	public static final String getFileChecksum(final File file, final MessageDigest digest) throws IOException
 	{
 		final FileInputStream input = new FileInputStream(file);

@@ -6,6 +6,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.logging.Level;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -20,7 +21,10 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import fr.minewild.launcher.data.Constants;
+import fr.minewild.launcher.data.Profile;
+import fr.minewild.launcher.tasks.PlayTask;
 import fr.minewild.launcher.utils.LastLoginSaveManager;
+import fr.minewild.launcher.utils.LogUtils;
 import fr.minewild.launcher.utils.ServerConnection;
 import fr.minewild.launcher.utils.Utils;
 
@@ -59,6 +63,7 @@ public class MainFrame extends JFrame implements ActionListener
 			setMaximumSize(new Dimension(200, 20));
 			setForeground(Constants.LAUCNHER_FONT_COLOR);
 			setFont(getFont().deriveFont(Font.BOLD));
+			setEnabled(false);
 		}
 	};
 	
@@ -68,6 +73,7 @@ public class MainFrame extends JFrame implements ActionListener
 		{
 			setMaximumSize(new Dimension(280, 20));
 			setText(loadContent[0]);
+			setEnabled(false);
 		}
 	};
 	
@@ -78,6 +84,7 @@ public class MainFrame extends JFrame implements ActionListener
 			setMaximumSize(new Dimension(193, 20));
 			setForeground(Constants.LAUCNHER_FONT_COLOR);
 			setFont(getFont().deriveFont(Font.BOLD));
+			setEnabled(false);
 		}
 	};
 	
@@ -89,6 +96,7 @@ public class MainFrame extends JFrame implements ActionListener
 			setCursor(new Cursor(Cursor.HAND_CURSOR));
 			setOpaque(false);
 			setSelected(loadContent[1].equals("true"));
+			setEnabled(false);
 		}
 	};
 	
@@ -100,6 +108,7 @@ public class MainFrame extends JFrame implements ActionListener
 			setForeground(Constants.LAUCNHER_FONT_COLOR);
 			setFont(getFont().deriveFont(Font.BOLD));
 			setEnabled(cbxPremium.isSelected());
+			setEnabled(false);
 		}
 	};
 	
@@ -109,6 +118,7 @@ public class MainFrame extends JFrame implements ActionListener
 		{
 			setMaximumSize(new Dimension(280, 20));
 			setEnabled(cbxPremium.isSelected());
+			setEnabled(false);
 		}
 	};
 	
@@ -258,8 +268,10 @@ public class MainFrame extends JFrame implements ActionListener
 		this.setLocationRelativeTo(null);
 	}
 	
-	public void updateServerStatusLabel()
+	private void updateServerStatusLabel()
 	{
+		if(!lblMinewildServer.isEnabled() || !lblMinewildServerStatus.isEnabled())
+			setEnableServerStatus(true);
 		if(ServerConnection.getServerStatus())
 		{
 			lblMinewildServerStatus.setText("En ligne");
@@ -270,7 +282,7 @@ public class MainFrame extends JFrame implements ActionListener
 		}
 	}
 	
-	public void updatePlayButton()// TODO: MAKE MORE CLEAN
+	private void updatePlayButton()// TODO: MAKE MORE CLEAN
 	{
 		if(txtfldPseudo.getText().length() >= 3 && (cbxPremium.isSelected() ? pswfldPassword.getPassword().length >= 3 : true))
 			btnPlay.setEnabled(true);
@@ -301,6 +313,24 @@ public class MainFrame extends JFrame implements ActionListener
 		}
 	}
 	
+	public void dispFiveSecMessageOnPlayButton(String message)
+	{
+		Thread thread;
+		thread = new DispFiveSecMessageOnPlayButton(message);
+		thread.start();
+	}
+	
+	public void btnPlaySetText(String text)
+	{
+		btnPlay.setText(text);
+	}
+	
+	public void updatePlayButton(String text, boolean enable)
+	{
+		btnPlay.setText(text);
+		btnPlay.setEnabled(enable);
+	}
+	
 	private String getPlayBtnTxt()// TODO attention au nom de la méthode
 	{
 		if(ServerConnection.getServerStatus())
@@ -315,21 +345,75 @@ public class MainFrame extends JFrame implements ActionListener
 	{
 		if(cbxPremium.isSelected())
 		{
-			pswfldPassword.setEnabled(true);
-			lblPassword.setEnabled(true);
+			setEnablePasswordField(true);
 		}
 		else
 		{
-			pswfldPassword.setEnabled(false);
-			lblPassword.setEnabled(false);
+			setEnablePasswordField(false);
+		}
+	}
+	
+	private void setEnableServerStatus(boolean b)
+	{
+		lblMinewildServerStatus.setEnabled(b);
+		lblMinewildServer.setEnabled(b);
+	}
+	
+	private void setEnablePseudoField(boolean b)
+	{
+		txtfldPseudo.setEnabled(b);
+		lblPseudo.setEnabled(b);
+	}
+	
+	private void setEnableCbxPremium(boolean b)
+	{
+		cbxPremium.setEnabled(b);
+		lblPremium.setEnabled(b);
+	}
+	
+	private void setEnablePasswordField(boolean b)
+	{
+		pswfldPassword.setEnabled(b);
+		lblPassword.setEnabled(b);
+	}
+	
+	public void lock(boolean enable)
+	{
+		if(!enable)
+			updateFrame();
+		else
+		{
+			setEnableServerStatus(false);
+			setEnablePseudoField(false);
+			setEnableCbxPremium(false);
+			setEnablePasswordField(false);
+			updatePlayButton("Veuillez patienter ...", false);
 		}
 	}
 
+	public void updateFrame()
+	{
+		updateServerStatusLabel();
+		setEnablePseudoField(true);
+		setEnableCbxPremium(true);
+		updatePasswordField();
+		updatePlayButton();		
+	}
+	
+	public void setVisible(boolean visible)
+	{
+		super.setVisible(visible);
+		updateFrame();
+	}
+	
 	@Override
 	public void actionPerformed(ActionEvent arg0)
 	{
 		if(arg0.getSource() == btnClose)
+		{
+			LogUtils.log(Level.INFO, Constants.LAUNCHER_PREFIX + "Exit (close button pressed)");
 			System.exit(0);
+		}
 		if(arg0.getSource() == cbxPremium)
 		{
 			updatePasswordField();		
@@ -337,7 +421,34 @@ public class MainFrame extends JFrame implements ActionListener
 		}
 		if(arg0.getSource() == btnPlay)
 		{
-			LastLoginSaveManager.saveContents(txtfldPseudo.getText(), cbxPremium.isSelected());
+			new PlayTask(this, new Profile(txtfldPseudo.getText(), cbxPremium.isSelected() ? pswfldPassword.getPassword() : null)).start();
+			//TODO
+		}
+	}
+	
+	private class DispFiveSecMessageOnPlayButton extends Thread
+	{
+		String message;
+		
+		public DispFiveSecMessageOnPlayButton(String message)
+		{
+			this.message = message;
+		}
+		
+		public void run()
+		{
+			String initText = btnPlay.getText();
+			btnPlay.setText(message);
+			try
+			{
+				Thread.sleep(5000);// 5000 mili = 5 sec
+			}
+			catch(InterruptedException e)
+			{
+				// ...
+			}
+			if(btnPlay.getText().equals(message))// if the message have change during the thread sleep
+				btnPlay.setText(initText);
 		}
 	}
 }

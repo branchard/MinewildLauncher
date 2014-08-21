@@ -9,32 +9,44 @@ import java.util.UUID;
 import java.util.logging.Level;
 
 import fr.minewild.launcher.data.Constants;
+import fr.minewild.launcher.data.Tuple;
 
 public class ConnectionUtils
 {
-	public static String getUUIDfromServer(String username)
+	public static Tuple<String, Boolean> getUUIDfromServer(String username)
 	{
-		LogUtils.log(Level.INFO, Constants.CONNECTION_PREFIX + "Getting UUID from " + Constants.MINEWILD_SERVER_ADDRESS + "...");
-		PrintWriter out = null;
-		BufferedReader input = null;
-		Socket socket = null;
-		try
+		String result = null;
+		Boolean isWhiteListed = Boolean.FALSE;
+		if(ServerConnection.getServerStatus())
 		{
-			socket = new Socket(Constants.MINEWILD_SERVER_ADDRESS, Constants.MINEWILD_GET_UUID_PORT);
-			socket.setSoTimeout(Constants.SERVER_TIMEOUT);
-			out = new PrintWriter(socket.getOutputStream(), true);
-			input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			out.println(username);
-			String result = input.readLine();
-			LogUtils.log(Level.INFO, Constants.LAUNCHER_PREFIX + "UUID: " + result);
-			socket.close();
-			return result;
+			LogUtils.log(Level.INFO, Constants.CONNECTION_PREFIX + "Getting UUID from " + Constants.MINEWILD_SERVER_ADDRESS + "...");
+			PrintWriter out = null;
+			BufferedReader input = null;
+			Socket socket = null;
+			try
+			{
+				socket = new Socket(Constants.MINEWILD_SERVER_ADDRESS, Constants.MINEWILD_GET_UUID_PORT);
+				socket.setSoTimeout(Constants.SERVER_TIMEOUT);
+				out = new PrintWriter(socket.getOutputStream(), true);
+				input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+				out.println(username);
+				result = input.readLine();
+				socket.close();
+			}
+			catch(IOException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-		catch(IOException e)
+		if((!ServerConnection.getServerStatus()) || result.equals("null"))
 		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LogUtils.log(Level.INFO, Constants.CONNECTION_PREFIX + "Server is offline, randomUUID generated");
+			result = UUID.randomUUID().toString().replaceAll("-", "");
 		}
-		return UUID.randomUUID().toString().replaceAll("-", "");// TODO gérer les premiums
+		else
+			isWhiteListed = Boolean.TRUE;
+		LogUtils.log(Level.INFO, Constants.CONNECTION_PREFIX + "UUID: " + result);
+		return new Tuple<String, Boolean>(result, isWhiteListed);
 	}
 }

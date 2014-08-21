@@ -1,5 +1,6 @@
 package fr.minewild.launcher.frames;
 
+import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -26,8 +27,17 @@ public class MotionPanel extends JPanel
 				{
 					initialClick = e.getPoint();
 					getComponentAt(initialClick);
+					setCursor(new Cursor(Cursor.MOVE_CURSOR));
 				}
 			});
+		
+		addMouseListener(new MouseAdapter()
+		{
+			public void mouseReleased(MouseEvent e)
+			{
+				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			}
+		});
 		
 		addMouseMotionListener(new MouseMotionAdapter()
 			{

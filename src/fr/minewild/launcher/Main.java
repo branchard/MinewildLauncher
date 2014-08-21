@@ -41,19 +41,18 @@ public class Main
 				console.setVisible(true);
 			}
 			LogUtils.log(Level.INFO, Constants.LAUNCHER_PREFIX + Utils.buildTitle());
-			LogUtils.log(null, null);
+			LogUtils.log(null, null);//blank line
 			mainFrame = new MainFrame();
 			mainFrame.setVisible(true);
-			mainFrame.updateServerStatusLabel();
-			mainFrame.updatePlayButton();
 		}
 		catch(Exception e)
 		{
-			e.printStackTrace();
+			LogUtils.log(e.getStackTrace());
 			System.exit(1);
 		}
 	}
 }
 
 // TODO LIST
-// Mettre sur le bouton de lancement de minecraft : "Jouer en solo !" si le serveur minewild n'est pas accessible
+// Adopter le pattern MVC
+// Forcer les gens à utiliser ce launcher

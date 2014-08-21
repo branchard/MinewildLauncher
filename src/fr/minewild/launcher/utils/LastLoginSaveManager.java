@@ -53,7 +53,7 @@ public class LastLoginSaveManager
 			PrintWriter out = new PrintWriter(new FileWriter(Main.system.getMinewildDirectory() + File.separator + Constants.LAUCNHER_SAVE_FILE_NAME));
 			out.print(get);
 			out.close();
-			LogUtils.log(Level.INFO, Constants.LAUNCHER_PREFIX + "lastlogin file updated:" + Main.system.getMinewildDirectory() + Constants.LAUCNHER_SAVE_FILE_NAME);
+			LogUtils.log(Level.INFO, Constants.LAUNCHER_PREFIX + "lastlogin file updated:" + Main.system.getMinewildDirectory() + File.separator + Constants.LAUCNHER_SAVE_FILE_NAME);
 		}
 		catch(Exception e)
 		{

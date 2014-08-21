@@ -9,6 +9,7 @@ import java.util.logging.Level;
 
 import fr.minewild.launcher.data.Constants;
 
+//TODO: Il faudrait une variable lastUpdate, et lancer une update si le serveur n'a pas été check depuis 10 sec
 public class ServerConnection
 {
 	private static Boolean serverIsOnline;
@@ -32,7 +33,7 @@ public class ServerConnection
 		{
 			socket.connect(new InetSocketAddress(Constants.MINEWILD_SERVER_ADDRESS, Constants.MINEWILD_SERVER_PORT), Constants.SERVER_TIMEOUT);
 			socket.close();
-			LogUtils.log(Level.INFO, Constants.CONNECTION_PREFIX + "connection test - ok");
+			LogUtils.log(Level.INFO, Constants.CONNECTION_PREFIX + "connection check - ok");
 			return true;
 		}
 		catch(SocketTimeoutException | ConnectException e)// timeout or ConnectException
@@ -43,17 +44,16 @@ public class ServerConnection
 			}
 			catch(IOException e1)
 			{
-				e1.printStackTrace();
-				System.exit(1);// error
+				
 			}
-			LogUtils.log(Level.WARNING, Constants.CONNECTION_PREFIX + "connection test - timeout");
+			LogUtils.log(Level.INFO, Constants.CONNECTION_PREFIX + "connection check - timeout");
 			return false;
 		}
 		catch(IOException e)
 		{
-			e.printStackTrace();
-			System.exit(1);// error
+			
 		}
+		LogUtils.log(Level.WARNING, Constants.CONNECTION_PREFIX + "connection error");
 		return false;
 	}
 }

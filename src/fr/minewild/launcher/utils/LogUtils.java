@@ -63,6 +63,18 @@ public class LogUtils
 		log(level == null ? "" : "[" + formatter.format(Calendar.getInstance().getTime()) + " " + level + "] " + text);
 	}
 	
+	public static final void log(final StackTraceElement[] stackTraceElements)
+	{
+		StringBuilder res = new StringBuilder();
+		for(StackTraceElement e : stackTraceElements)
+		{
+			res.append(e.toString());
+			res.append("\n                  ");
+		}
+		res.replace(res.length() - 21, res.length(), "");
+		log(Level.SEVERE, res.toString());
+	}
+	
 	public static final String getStackTrace(final Throwable throwable)
 	{
 		final StringWriter writer = new StringWriter();
