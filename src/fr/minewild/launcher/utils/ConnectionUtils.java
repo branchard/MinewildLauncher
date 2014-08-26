@@ -1,52 +1,59 @@
 package fr.minewild.launcher.utils;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.net.ConnectException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.UUID;
+import java.net.SocketTimeoutException;
 import java.util.logging.Level;
 
 import fr.minewild.launcher.data.Constants;
-import fr.minewild.launcher.data.Tuple;
 
+//TODO: Il faudrait une variable lastUpdate, et lancer une update si le serveur n'a pas été check depuis 10 sec
 public class ConnectionUtils
 {
-	public static Tuple<String, Boolean> getUUIDfromServer(String username)
+	private static Boolean serverIsOnline;
+	
+	public static final void updateServerStatus()
 	{
-		String result = null;
-		Boolean isWhiteListed = Boolean.FALSE;
-		if(ServerConnection.getServerStatus())
+		serverIsOnline = Boolean.valueOf(isOnline());
+	}
+	
+	public static final boolean getServerStatus()
+	{
+		if(serverIsOnline == null)
+			updateServerStatus();
+		return serverIsOnline.booleanValue();
+	}
+	
+	private static final boolean isOnline()// check minewild server communication
+	{
+		Socket socket = new Socket();
+		try
 		{
-			LogUtils.log(Level.INFO, Constants.CONNECTION_PREFIX + "Getting UUID from " + Constants.MINEWILD_SERVER_ADDRESS + "...");
-			PrintWriter out = null;
-			BufferedReader input = null;
-			Socket socket = null;
+			socket.connect(new InetSocketAddress(Constants.MINEWILD_SERVER_ADDRESS, Constants.MINEWILD_SERVER_PORT), Constants.SERVER_TIMEOUT);
+			socket.close();
+			LogUtils.log(Level.INFO, Constants.CONNECTION_PREFIX + "connection check - ok");
+			return true;
+		}
+		catch(SocketTimeoutException | ConnectException e)// timeout or ConnectException
+		{
 			try
 			{
-				socket = new Socket(Constants.MINEWILD_SERVER_ADDRESS, Constants.MINEWILD_GET_UUID_PORT);
-				socket.setSoTimeout(Constants.SERVER_TIMEOUT);
-				out = new PrintWriter(socket.getOutputStream(), true);
-				input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				out.println(username);
-				result = input.readLine();
 				socket.close();
 			}
-			catch(IOException e)
+			catch(IOException e1)
 			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				
 			}
+			LogUtils.log(Level.INFO, Constants.CONNECTION_PREFIX + "connection check - timeout");
+			return false;
 		}
-		if((!ServerConnection.getServerStatus()) || result.equals("null"))
+		catch(IOException e)
 		{
-			LogUtils.log(Level.INFO, Constants.CONNECTION_PREFIX + "Server is offline, randomUUID generated");
-			result = UUID.randomUUID().toString().replaceAll("-", "");
+			
 		}
-		else
-			isWhiteListed = Boolean.TRUE;
-		LogUtils.log(Level.INFO, Constants.CONNECTION_PREFIX + "UUID: " + result);
-		return new Tuple<String, Boolean>(result, isWhiteListed);
+		LogUtils.log(Level.WARNING, Constants.CONNECTION_PREFIX + "connection error");
+		return false;
 	}
 }

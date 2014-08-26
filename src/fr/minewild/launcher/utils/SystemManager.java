@@ -66,10 +66,10 @@ public class SystemManager
 		return new File(getUserDirectory() + File.separator + (platform.getOS() == OS.MAC ? "" : ".") + Constants.MINEWILD_DIR_NAME);
 	}
 	
-	public final File getApplicationDirectory()
+	/*public final File getApplicationDirectory()
 	{
 		return getMinewildDirectory();
-	}
+	}*/
 	
 	public enum OS
 	{

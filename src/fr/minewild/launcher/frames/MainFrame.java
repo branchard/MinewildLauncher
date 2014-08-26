@@ -25,7 +25,7 @@ import fr.minewild.launcher.data.Profile;
 import fr.minewild.launcher.tasks.PlayTask;
 import fr.minewild.launcher.utils.LastLoginSaveManager;
 import fr.minewild.launcher.utils.LogUtils;
-import fr.minewild.launcher.utils.ServerConnection;
+import fr.minewild.launcher.utils.ConnectionUtils;
 import fr.minewild.launcher.utils.Utils;
 
 public class MainFrame extends JFrame implements ActionListener
@@ -272,7 +272,7 @@ public class MainFrame extends JFrame implements ActionListener
 	{
 		if(!lblMinewildServer.isEnabled() || !lblMinewildServerStatus.isEnabled())
 			setEnableServerStatus(true);
-		if(ServerConnection.getServerStatus())
+		if(ConnectionUtils.getServerStatus())
 		{
 			lblMinewildServerStatus.setText("En ligne");
 		}
@@ -333,7 +333,7 @@ public class MainFrame extends JFrame implements ActionListener
 	
 	private String getPlayBtnTxt()// TODO attention au nom de la méthode
 	{
-		if(ServerConnection.getServerStatus())
+		if(ConnectionUtils.getServerStatus())
 		{
 			return "Jouer !";
 		}
@@ -421,7 +421,7 @@ public class MainFrame extends JFrame implements ActionListener
 		}
 		if(arg0.getSource() == btnPlay)
 		{
-			new PlayTask(this, new Profile(txtfldPseudo.getText(), cbxPremium.isSelected() ? pswfldPassword.getPassword() : null)).start();
+			new PlayTask(txtfldPseudo.getText(), cbxPremium.isSelected() ? pswfldPassword.getPassword() : null, this).start();
 			//TODO
 		}
 	}
