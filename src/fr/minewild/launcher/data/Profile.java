@@ -1,12 +1,10 @@
 package fr.minewild.launcher.data;
 
-import java.io.File;
-
 import fr.minewild.launcher.Main;
-import fr.minewild.launcher.utils.WhitelistManager;
-import fr.minewild.launcher.utils.Utils;
 import fr.minewild.launcher.utils.SystemManager.OS;
 import fr.minewild.launcher.utils.SystemManager.Platform;
+import fr.minewild.launcher.utils.Utils;
+import fr.minewild.launcher.utils.WhitelistManager;
 
 public class Profile
 {
@@ -47,7 +45,7 @@ public class Profile
 		return password;
 	}
 
-	public String getUuid()
+	public String getUUID()
 	{
 		return uuid;
 	}

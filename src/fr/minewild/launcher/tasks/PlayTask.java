@@ -9,12 +9,10 @@ import java.util.logging.Level;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import com.sun.xml.internal.ws.util.StringUtils;
 
 import fr.minewild.launcher.Main;
 import fr.minewild.launcher.data.Constants;
 import fr.minewild.launcher.data.Profile;
-import fr.minewild.launcher.data.VersionProfile;
 import fr.minewild.launcher.frames.MainFrame;
 import fr.minewild.launcher.utils.LastLoginSaveManager;
 import fr.minewild.launcher.utils.LogUtils;
@@ -41,6 +39,12 @@ public class PlayTask extends Thread
 		LogUtils.log(Level.INFO, Constants.PLAY_TASK_PREFIX + "OS : " + profile.getOs().getName());
 		LogUtils.log(Level.INFO, Constants.PLAY_TASK_PREFIX + "Architecture : " + profile.getArch());
 		LogUtils.log(Level.INFO, Constants.PLAY_TASK_PREFIX + "Java version : " + System.getProperty("java.version"));
+		//
+		final File gameDirectory = Main.system.getMinewildDirectory();
+		final File assetsDirectory = new File(gameDirectory.getPath() + Constants.ASSETS_SUFFIX);
+		final File versionDirectory = new File(gameDirectory.getPath() + Constants.VERSIONS_SUFFIX);
+		final File librariesDirectory = new File(gameDirectory.getPath() + Constants.LIBS_SUFFIX);
+		//
 		//check pswd
 		if(profile.getPassword() != null)//if premium
 		{
@@ -55,7 +59,6 @@ public class PlayTask extends Thread
 		//boucle qui dl les games files
 		//verifier que la version requise existe (dossier + fichiers)
 		mainFrame.btnPlaySetText("Lancement du jeu" + (profile.isWhiteListed() ? "" : " en solo") + " ...");
-		final File versionDirectory = new File(Main.system.getMinewildDirectory().getPath() + File.separator + "versions" + File.separator + profile.getVersion());
 		final Gson gson = new Gson();
 		MinecraftVersionJsonObject versionObj = null;
 		try
@@ -69,8 +72,7 @@ public class PlayTask extends Thread
 		}
 		List<String> libraries;
 		
-		VersionProfile versionProfile = new VersionProfile(versionObj.id, versionObj.time, versionObj.releaseTime, versionObj.type, versionObj.minecraftArguments, versionObj.minimumLauncherVersion, versionObj.assets, libraries, versionObj.mainClass, Main.system.getMinewildDirectory(), profile.getVersion());
-		final List<String> args = ArgumentsManager.getMinecraftArgs(profile, versionObj.assets);
+		final List<String> args = ArgumentsManager.getMinecraftArgs(profile, versionObj.assets, gameDirectory, assetsDirectory);
 		LogUtils.log(Level.INFO, Constants.PLAY_TASK_PREFIX + "Checking libraries...");
 		final List<String> librariesPaths = new ArrayList<String>();
 		for(final Library library : versionObj.libraries) {
@@ -91,7 +93,7 @@ public class PlayTask extends Thread
 			}
 			libFileName += ".jar";
 			final String libPath = "/" + libData[0].replace(".", "/") + "/" + libName + "/" + libVersion + "/" + libFileName;
-			final File libFile = new File(versionProfile.getLibrariesDirectory(), libPath.replace("/", File.separator));
+			final File libFile = new File(librariesDirectory, libPath.replace("/", File.separator));
 			final String libUrl = Constants.LIBS_URL + libPath;
 			if(!libFile.exists() && !(library.natives != null && !hasNative) && !fixFile(libFile, libUrl, FileType.LIBRARY, FixMode.MISSING)) {
 				return;
@@ -117,11 +119,12 @@ public class PlayTask extends Thread
 		LogUtils.log(Level.INFO, Constants.PLAY_TASK_PREFIX + "Done.");
 		final List<String> command = new ArrayList<String>();
 		LogUtils.log(Level.INFO, "Executing command : " + StringUtils.join(command, ' '));
-		final Process process = new ProcessBuilder(command.toArray(new String[command.size()])).directory(versionProfile.getGameDirectory()).start();
+		final Process process = new ProcessBuilder(command.toArray(new String[command.size()])).directory(gameDirectory).start();
 		LogUtils.log(Level.INFO, Constants.PLAY_TASK_PREFIX + "Done.");
 		mainFrame.setVisible(false);//TODO waring
 	}
 	
+	@SuppressWarnings("unused")
 	private class MinecraftVersionJsonObject
 	{
 		private String			id;

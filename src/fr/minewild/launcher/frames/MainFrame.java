@@ -421,7 +421,7 @@ public class MainFrame extends JFrame implements ActionListener
 		}
 		if(arg0.getSource() == btnPlay)
 		{
-			new PlayTask(txtfldPseudo.getText(), cbxPremium.isSelected() ? pswfldPassword.getPassword() : null, this).start();
+			new PlayTask(new Profile(txtfldPseudo.getText(), cbxPremium.isSelected() ? pswfldPassword.getPassword() : null), this).start();
 			//TODO
 		}
 	}
