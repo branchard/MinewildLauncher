@@ -17,6 +17,7 @@ import fr.minewild.launcher.frames.MainFrame;
 import fr.minewild.launcher.utils.LastLoginSaveManager;
 import fr.minewild.launcher.utils.LogUtils;
 import fr.minewild.launcher.utils.ConnectionUtils;
+import fr.minewild.launcher.utils.StringUtils;
 import fr.minewild.launcher.utils.SystemManager.OS;
 import fr.minewild.launcher.utils.Utils;
 
@@ -42,8 +43,10 @@ public class PlayTask extends Thread
 		//
 		final File gameDirectory = Main.system.getMinewildDirectory();
 		final File assetsDirectory = new File(gameDirectory.getPath() + Constants.ASSETS_SUFFIX);
-		final File versionDirectory = new File(gameDirectory.getPath() + Constants.VERSIONS_SUFFIX);
+		final File versionsDirectory = new File(gameDirectory.getPath() + Constants.VERSIONS_SUFFIX);
 		final File librariesDirectory = new File(gameDirectory.getPath() + Constants.LIBS_SUFFIX);
+		final File nativesDir = new File(versionsDirectory.getPath() + Constants.NATIVES_SUFFIX);
+		final File gameFile = new File(versionsDirectory.getPath() + File.separator + profile.getVersion() + File.separator + profile.getVersion() + ".jar");
 		//
 		//check pswd
 		if(profile.getPassword() != null)//if premium
@@ -63,63 +66,37 @@ public class PlayTask extends Thread
 		MinecraftVersionJsonObject versionObj = null;
 		try
 		{
-			versionObj = gson.fromJson(Utils.getFileContent(new File(versionDirectory.getPath() + File.separator + profile.getVersion() + ".json"), null), MinecraftVersionJsonObject.class);
+			versionObj = gson.fromJson(Utils.getFileContent(new File(versionsDirectory.getPath() + File.separator + profile.getVersion() + File.separator + profile.getVersion() + ".json"), null), MinecraftVersionJsonObject.class);
 		}
 		catch(JsonSyntaxException | IOException e)
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		List<String> libraries;
-		
-		final List<String> args = ArgumentsManager.getMinecraftArgs(profile, versionObj.assets, gameDirectory, assetsDirectory);
-		LogUtils.log(Level.INFO, Constants.PLAY_TASK_PREFIX + "Checking libraries...");
-		final List<String> librariesPaths = new ArrayList<String>();
-		for(final Library library : versionObj.libraries) {
-			if(library.isDisallowed(profile.getOs())) {
-				break;
-			}
-			final String[] libData = library.name.split(":");
-			final String libName = libData[1];
-			final String libVersion = libData[2];
-			String libFileName = libName + "-" + libVersion;
-			boolean hasNative = false;
-			if(library.natives != null) {
-				final String nativeOs = library.natives.get(osMinecraftName);
-				if(nativeOs != null) {
-					libFileName += "-" + library.natives.get(osMinecraftName).replace("${arch}", profile.getArch());
-					hasNative = true;
-				}
-			}
-			libFileName += ".jar";
-			final String libPath = "/" + libData[0].replace(".", "/") + "/" + libName + "/" + libVersion + "/" + libFileName;
-			final File libFile = new File(librariesDirectory, libPath.replace("/", File.separator));
-			final String libUrl = Constants.LIBS_URL + libPath;
-			if(!libFile.exists() && !(library.natives != null && !hasNative) && !fixFile(libFile, libUrl, FileType.LIBRARY, FixMode.MISSING)) {
-				return;
-			}
-			final File sha1File = new File(libFile + ".sha");
-			if(!sha1File.exists() && !fixFile(sha1File, libUrl + ".sha1", FileType.HASH, FixMode.MISSING)) {
-				LogUtils.log(Level.WARNING, Constants.PLAY_TASK_PREFIX + "Cannot download the SHA1 file, it has been ignored.");
-			}
-			if(sha1File.exists() && !Utils.getFileContent(sha1File, null).equals(Utils.getFileChecksum(libFile, sha1)) && !fixFile(libFile, libUrl, FileType.LIBRARY, FixMode.INVALID)) {
-				return;
-			}
-			if(hasNative) {
-				LogUtils.log(Level.INFO, Constants.PLAY_TASK_PREFIX + "Unzipping native...");
-				if(!Utils.unzipJar(nativesDir, libFile, library.extract.exclude)) {
-					LogUtils.log(Level.SEVERE, Constants.PLAY_TASK_PREFIX + "Unable to unzip the native " + libFile.getName() + ". Please unzip it manually and place it into " + nativesDir.getName() + ".");
-					return;
-				}
-			}
-			else {
-				librariesPaths.add(libFile.getAbsolutePath());
-			}
+		List<String> libraries = new ArrayList<String>();
+		for(Library lib : versionObj.libraries)
+		{
+			libraries.add(lib.toString());
 		}
 		LogUtils.log(Level.INFO, Constants.PLAY_TASK_PREFIX + "Done.");
+		final String pathSeparator = System.getProperty("path.separator");
 		final List<String> command = new ArrayList<String>();
-		LogUtils.log(Level.INFO, "Executing command : " + StringUtils.join(command, ' '));
-		final Process process = new ProcessBuilder(command.toArray(new String[command.size()])).directory(gameDirectory).start();
+		command.add(Utils.getJavaDir());
+		command.add("-Djava.library.path=" + nativesDir.getAbsolutePath());
+		command.add("-cp");
+		command.add(StringUtils.join(libraries, pathSeparator) + pathSeparator + gameFile.getAbsolutePath());
+		command.add(versionObj.mainClass);
+		command.addAll(ArgumentsManager.getMinecraftArgs(profile, versionObj.assets, gameDirectory, assetsDirectory));
+		LogUtils.log(Level.INFO, "Executing command: " + StringUtils.join(command, ' '));
+		try
+		{
+			final Process process = new ProcessBuilder(command.toArray(new String[command.size()])).directory(gameDirectory).start();
+		}
+		catch(IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		LogUtils.log(Level.INFO, Constants.PLAY_TASK_PREFIX + "Done.");
 		mainFrame.setVisible(false);//TODO waring
 	}
@@ -181,6 +158,11 @@ public class PlayTask extends Thread
 		{
 			
 			private List<String>	exclude;
+		}
+		
+		public String toString()
+		{
+			return name;
 		}
 	}
 	

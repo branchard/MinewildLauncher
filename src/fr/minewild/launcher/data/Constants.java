@@ -38,8 +38,8 @@ public class Constants
 	//                            //
 	////////////////////////////////
 	public static final String		CONNECTION_PREFIX				= "[CONNECTION] ";
-	public static final String		MINEWILD_SERVER_ADDRESS			= "188.165.164.162";
-	public static final int			MINEWILD_SERVER_PORT			= 25752, MINEWILD_GET_UUID_PORT = 8072, SERVER_TIMEOUT = 6000;
+	public static final String		MINEWILD_SERVER_ADDRESS			= "371.59.252.148";
+	public static final int			MINEWILD_SERVER_PORT			= 25565, MINEWILD_GET_UUID_PORT = 8072, SERVER_TIMEOUT = 6000;
 	
 	////////////////////////////////
 	//                            //
@@ -50,6 +50,7 @@ public class Constants
 	public static final String		DEFAULT_MINECRAFT_VERSION		= "1.7.9";
 	public static final String      MINECRAFT_ARGS_PREFIXE			= "--";
 	public static final String 		LIBS_SUFFIX 					= "/libraries";
+	public static final String 		NATIVES_SUFFIX 					= "/natives";
 	public static final String 		LIBS_URL 						= "https:/" + LIBS_SUFFIX + ".minecraft.net";
 	public static final String 		MINECRAFT_AWS_URL 				= "http://s3.amazonaws.com/Minecraft.Download";
 	public static final String 		MINECRAFT_RES_URL 				= "http://resources.download.minecraft.net";
